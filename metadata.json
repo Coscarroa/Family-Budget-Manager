@@ -1,0 +1,6 @@
+{
+  "name": "Family Budget Manager",
+  "description": "Aplicación profesional de gestión financiera familiar con interfaz estilo Apple iOS, control de ingresos, gastos fijos, variables, presupuestos, calendario financiero, informes y arquitectura Swift/SwiftUI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
