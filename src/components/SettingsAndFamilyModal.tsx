@@ -18,29 +18,38 @@ import {
   FamilyMember,
   CurrencyCode,
   SUPPORTED_CURRENCIES,
+  AppLanguage,
 } from '../types/finance';
+import { getTranslation } from '../services/i18n';
 
 interface SettingsAndFamilyModalProps {
   household: Household;
   members: FamilyMember[];
+  language: AppLanguage;
+  onLanguageChange: (lang: AppLanguage) => void;
   onClose: () => void;
   onUpdateHousehold: (updated: Household) => void;
   onUpdateMembers: (members: FamilyMember[]) => void;
   onExportJSON: () => void;
   onImportJSON: (jsonString: string) => void;
   onResetToDemo: () => void;
+  onOpenUsersAndVariables?: () => void;
 }
 
 export const SettingsAndFamilyModal: React.FC<SettingsAndFamilyModalProps> = ({
   household,
   members,
+  language,
+  onLanguageChange,
   onClose,
   onUpdateHousehold,
   onUpdateMembers,
   onExportJSON,
   onImportJSON,
   onResetToDemo,
+  onOpenUsersAndVariables,
 }) => {
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
   const [activeTab, setActiveTab] = useState<'household' | 'members' | 'security' | 'backup'>('household');
 
   // Household fields
@@ -64,6 +73,7 @@ export const SettingsAndFamilyModal: React.FC<SettingsAndFamilyModalProps> = ({
       budgetCycleStartDay,
       pinProtected,
       pinCode,
+      language,
     });
     onClose();
   };
@@ -105,10 +115,16 @@ export const SettingsAndFamilyModal: React.FC<SettingsAndFamilyModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-black/60 backdrop-blur-sm sm:p-4 overflow-y-auto">
+      <div
+        className="w-full sm:max-w-lg bg-white dark:bg-slate-900 rounded-t-[32px] sm:rounded-3xl p-5 sm:p-6 shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] sm:max-h-[85vh] overflow-y-auto no-scrollbar ios-sheet-slide-up"
+        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
+      >
+        {/* iPhone Drag handle affordance */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto sm:hidden -mt-1 mb-2" />
+
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -203,27 +219,56 @@ export const SettingsAndFamilyModal: React.FC<SettingsAndFamilyModalProps> = ({
 
             <div>
               <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                Día de Inicio del Período Presupuestario
+                {t('idioma')} / Language
               </label>
-              <input
-                type="number"
-                min="1"
-                max="28"
-                value={budgetCycleStartDay}
-                onChange={(e) => setBudgetCycleStartDay(parseInt(e.target.value, 10) || 1)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-              />
-              <span className="text-[11px] text-slate-400 block mt-1">
-                Día en que se reinicia el cómputo mensual (habitualmente día 1 o día 15 de nómina).
-              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onLanguageChange('es')}
+                  className={`p-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                    language === 'es'
+                      ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 text-blue-700 dark:text-blue-300 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  🇪🇸 Español
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onLanguageChange('en')}
+                  className={`p-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                    language === 'en'
+                      ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 text-blue-700 dark:text-blue-300 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  🇺🇸 English
+                </button>
+              </div>
             </div>
+
+            {onOpenUsersAndVariables && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenUsersAndVariables();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition-colors"
+                >
+                  <Users className="w-3.5 h-3.5 text-blue-500" />
+                  <span>{t('gestion_usuarios_vars')}</span>
+                </button>
+              </div>
+            )}
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
                 type="submit"
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl"
               >
-                Guardar Ajustes
+                {t('guardar')}
               </button>
             </div>
           </form>

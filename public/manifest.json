@@ -1,0 +1,30 @@
+{
+  "name": "Family Budget Manager",
+  "short_name": "Family Budget",
+  "description": "Aplicación profesional de gestión financiera familiar con interfaz inspirada en Apple iOS, control de ingresos, gastos fijos, variables, presupuestos, calendario y modo offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#000000",
+  "theme_color": "#007AFF",
+  "icons": [
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"]
+}

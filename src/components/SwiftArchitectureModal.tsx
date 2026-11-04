@@ -43,8 +43,8 @@ export const SwiftArchitectureModal: React.FC<SwiftArchitectureModalProps> = ({ 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
-      <div className="w-full max-w-5xl h-[85vh] bg-slate-950 text-white rounded-3xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-black/80 backdrop-blur-md p-2 sm:p-6 overflow-y-auto">
+      <div className="w-full sm:max-w-5xl h-[92vh] sm:h-[85vh] bg-slate-950 text-white rounded-t-[32px] sm:rounded-3xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">

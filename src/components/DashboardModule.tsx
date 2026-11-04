@@ -23,10 +23,14 @@ import {
   ActiveTab,
   BudgetLimit,
   VariableExpense,
+  AppLanguage,
 } from '../types/finance';
 import { FinancialCalculatorService } from '../services/financialCalculations';
+import { getTranslation } from '../services/i18n';
+import { Camera } from 'lucide-react';
 
 interface DashboardModuleProps {
+  language: AppLanguage;
   summary: MonthFinancialSummary;
   currencyCode: CurrencyCode;
   monthYear: string;
@@ -37,9 +41,11 @@ interface DashboardModuleProps {
   onNavigateTab: (tab: ActiveTab) => void;
   onOpenNewTransaction: (defaultType: 'income' | 'fixedExpense' | 'variable') => void;
   onPayFixedExpense: (expense: FixedExpense) => void;
+  onOpenScanReceipt: () => void;
 }
 
 export const DashboardModule: React.FC<DashboardModuleProps> = ({
+  language,
   summary,
   currencyCode,
   monthYear,
@@ -50,7 +56,9 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   onNavigateTab,
   onOpenNewTransaction,
   onPayFixedExpense,
+  onOpenScanReceipt,
 }) => {
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
   const format = (val: number) => FinancialCalculatorService.formatCurrency(val, currencyCode);
 
   // Calculate category budget status
@@ -64,7 +72,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   const overBudgets = budgetStatuses.filter((b) => b.isOverBudget);
 
   return (
-    <div className="space-y-6 pb-20 animate-in fade-in duration-300">
+    <div className="space-y-4 sm:space-y-6 pb-32 sm:pb-24 animate-in fade-in duration-300">
       {/* Critical Alert Banners (if any bills overdue or budgets exceeded) */}
       {(overdueExpenses.length > 0 || overBudgets.length > 0) && (
         <div className="space-y-2">
@@ -145,7 +153,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
                 Ingresos Recibidos - Gastos Ejecutados
               </span>
             </div>
-            <div className="text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums">
+            <div className="text-3xl sm:text-5xl font-extrabold tracking-tight tabular-nums break-words">
               {format(summary.availableBalance)}
             </div>
             <p className="text-xs text-blue-100 max-w-md leading-relaxed">
@@ -153,20 +161,27 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+            <button
+              onClick={onOpenScanReceipt}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white text-blue-800 hover:bg-blue-50 font-bold text-xs shadow-md transition-transform active:scale-95 cursor-pointer shrink-0"
+            >
+              <Camera className="w-4 h-4 text-blue-600" />
+              <span>{t('scan_receipt_btn')}</span>
+            </button>
             <button
               onClick={() => onOpenNewTransaction('variable')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs shadow-md transition-transform active:scale-95 cursor-pointer shrink-0"
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-blue-500/40 hover:bg-blue-500/50 text-white font-semibold text-xs border border-white/20 backdrop-blur-xs transition-colors cursor-pointer shrink-0"
             >
-              <PlusCircle className="w-4 h-4 text-blue-600" />
-              <span>Registrar Gasto</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>{t('registrar_gasto')}</span>
             </button>
             <button
               onClick={() => onOpenNewTransaction('income')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-500/30 hover:bg-blue-500/40 text-white font-semibold text-xs border border-white/20 backdrop-blur-xs transition-colors cursor-pointer shrink-0"
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-blue-500/25 hover:bg-blue-500/35 text-white font-semibold text-xs border border-white/20 backdrop-blur-xs transition-colors cursor-pointer shrink-0"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Registrar Ingreso</span>
+              <span>{t('registrar_ingreso')}</span>
             </button>
           </div>
         </div>

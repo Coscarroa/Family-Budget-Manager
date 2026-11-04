@@ -107,7 +107,7 @@ export const CalendarModule: React.FC<CalendarModuleProps> = ({
   const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   return (
-    <div className="space-y-6 pb-20 animate-in fade-in duration-300">
+    <div className="space-y-6 pb-32 sm:pb-24 animate-in fade-in duration-300">
       {/* Title */}
       <div>
         <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">

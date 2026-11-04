@@ -134,7 +134,7 @@ export const FixedExpensesModule: React.FC<FixedExpensesModuleProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-20 animate-in fade-in duration-300">
+    <div className="space-y-6 pb-32 sm:pb-24 animate-in fade-in duration-300">
       {/* Module Title & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

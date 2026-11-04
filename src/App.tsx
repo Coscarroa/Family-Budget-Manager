@@ -14,9 +14,11 @@ import {
   FinancialGoal,
   ActiveTab,
   PaymentMethod,
+  AppLanguage,
 } from './types/finance';
 import { StorageService } from './services/storage';
 import { FinancialCalculatorService } from './services/financialCalculations';
+import { getTranslation } from './services/i18n';
 
 // Components
 import { Header } from './components/Header';
@@ -31,9 +33,12 @@ import { BudgetModule } from './components/BudgetModule';
 import { CalendarModule } from './components/CalendarModule';
 import { ReportsModule } from './components/ReportsModule';
 import { SavingsGoalsModule } from './components/SavingsGoalsModule';
+import { UsersAndVariablesModule } from './components/UsersAndVariablesModule';
 import { TransactionModal } from './components/TransactionModal';
 import { SettingsAndFamilyModal } from './components/SettingsAndFamilyModal';
 import { SwiftArchitectureModal } from './components/SwiftArchitectureModal';
+import { ReceiptScannerModal } from './components/ReceiptScannerModal';
+import { LoginPage } from './components/LoginPage';
 
 export default function App() {
   // Theme state
@@ -59,6 +64,15 @@ export default function App() {
   const [budgets, setBudgets] = useState<BudgetLimit[]>(() => StorageService.getBudgets());
   const [goals, setGoals] = useState<FinancialGoal[]>(() => StorageService.getGoals());
 
+  // Language state (default from household or Spanish)
+  const [language, setLanguage] = useState<AppLanguage>(household.language || 'es');
+
+  // Authenticated user session
+  const [currentUser, setCurrentUser] = useState<FamilyMember | null>(() => {
+    const session = StorageService.getAuthSession();
+    return session?.user || null;
+  });
+
   // Security Lock
   const [isLocked, setIsLocked] = useState<boolean>(() => household.pinProtected);
 
@@ -69,6 +83,7 @@ export default function App() {
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSwiftDocsModal, setShowSwiftDocsModal] = useState(false);
+  const [showReceiptScannerModal, setShowReceiptScannerModal] = useState(false);
 
   // Toast / Status notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -87,6 +102,15 @@ export default function App() {
       root.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // Language toggle handler
+  const handleLanguageChange = (newLang: AppLanguage) => {
+    setLanguage(newLang);
+    const updated = { ...household, language: newLang };
+    setHousehold(updated);
+    StorageService.saveHousehold(updated);
+    showToast(newLang === 'en' ? 'Language switched to English' : 'Idioma cambiado a Español');
+  };
 
   // Previous month string calculation (for comparative statistics)
   const previousMonthYear = useMemo(() => {
@@ -143,17 +167,49 @@ export default function App() {
     );
   }, [fixedExpenses, currentMonthYear, todayStr]);
 
+  // Handlers for authentication
+  const handleLoginSuccess = (user: FamilyMember, method: 'otp' | 'biometric') => {
+    setCurrentUser(user);
+    StorageService.saveAuthSession({ user, method });
+    showToast(
+      language === 'en'
+        ? `Welcome, ${user.name}! (${user.systemRole || 'editor'})`
+        : `¡Bienvenido/a, ${user.name}! (${user.systemRole || 'editor'})`
+    );
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    StorageService.saveAuthSession(null);
+    showToast(language === 'en' ? 'Session closed' : 'Sesión cerrada correctamente');
+  };
+
+  const handleRegisterNewMember = (newMember: FamilyMember) => {
+    const updated = [...members, newMember];
+    setMembers(updated);
+    StorageService.saveMembers(updated);
+  };
+
   // Handlers for data updates
   const handleUpdateHousehold = (updated: Household) => {
     setHousehold(updated);
+    if (updated.language) setLanguage(updated.language);
     StorageService.saveHousehold(updated);
-    showToast('Configuración del hogar guardada exitosamente');
+    showToast(language === 'en' ? 'Household settings saved' : 'Configuración del hogar guardada exitosamente');
   };
 
   const handleUpdateMembers = (updated: FamilyMember[]) => {
     setMembers(updated);
     StorageService.saveMembers(updated);
-    showToast('Integrantes de la familia actualizados');
+    // If current logged in user was modified, keep in sync
+    if (currentUser) {
+      const match = updated.find((m) => m.id === currentUser.id);
+      if (match) {
+        setCurrentUser(match);
+        StorageService.saveAuthSession({ user: match, method: 'otp' });
+      }
+    }
+    showToast(language === 'en' ? 'Family members updated' : 'Integrantes de la familia actualizados');
   };
 
   // Incomes handlers
@@ -161,7 +217,7 @@ export default function App() {
     const next = [newIncome, ...incomes];
     setIncomes(next);
     StorageService.saveIncomes(next);
-    showToast(`Ingreso "${newIncome.description}" guardado`);
+    showToast(language === 'en' ? `Income "${newIncome.description}" added` : `Ingreso "${newIncome.description}" guardado`);
   };
 
   const handleUpdateIncome = (updated: Income) => {
@@ -174,7 +230,7 @@ export default function App() {
     const next = incomes.filter((i) => i.id !== id);
     setIncomes(next);
     StorageService.saveIncomes(next);
-    showToast('Ingreso eliminado');
+    showToast(language === 'en' ? 'Income deleted' : 'Ingreso eliminado');
   };
 
   // Fixed Expenses handlers
@@ -182,7 +238,7 @@ export default function App() {
     const next = [newExp, ...fixedExpenses];
     setFixedExpenses(next);
     StorageService.saveFixedExpenses(next);
-    showToast(`Obligación fija "${newExp.name}" agregada`);
+    showToast(language === 'en' ? `Fixed bill "${newExp.name}" added` : `Obligación fija "${newExp.name}" agregada`);
   };
 
   const handleUpdateFixedExpense = (updated: FixedExpense) => {
@@ -195,7 +251,7 @@ export default function App() {
     const next = fixedExpenses.filter((f) => f.id !== id);
     setFixedExpenses(next);
     StorageService.saveFixedExpenses(next);
-    showToast('Obligación fija eliminada');
+    showToast(language === 'en' ? 'Fixed bill deleted' : 'Obligación fija eliminada');
   };
 
   // Variable Expenses handlers
@@ -203,7 +259,7 @@ export default function App() {
     const next = [newExp, ...variableExpenses];
     setVariableExpenses(next);
     StorageService.saveVariableExpenses(next);
-    showToast(`Gasto "${newExp.description}" registrado`);
+    showToast(language === 'en' ? `Expense "${newExp.description}" logged` : `Gasto "${newExp.description}" registrado`);
   };
 
   const handleUpdateVariableExpense = (updated: VariableExpense) => {
@@ -216,7 +272,7 @@ export default function App() {
     const next = variableExpenses.filter((v) => v.id !== id);
     setVariableExpenses(next);
     StorageService.saveVariableExpenses(next);
-    showToast('Gasto eliminado');
+    showToast(language === 'en' ? 'Expense deleted' : 'Gasto eliminado');
   };
 
   // Budgets handlers
@@ -241,14 +297,18 @@ export default function App() {
     }
     setBudgets(next);
     StorageService.saveBudgets(next);
-    showToast(`Presupuesto de ${category} fijado en $${monthlyLimit}`);
+    showToast(
+      language === 'en'
+        ? `Budget for ${category} set to $${monthlyLimit}`
+        : `Presupuesto de ${category} fijado en $${monthlyLimit}`
+    );
   };
 
   const handleDeleteBudgetLimit = (id: string) => {
     const next = budgets.filter((b) => b.id !== id);
     setBudgets(next);
     StorageService.saveBudgets(next);
-    showToast('Límite de presupuesto eliminado');
+    showToast(language === 'en' ? 'Budget limit removed' : 'Límite de presupuesto eliminado');
   };
 
   // Goals handlers
@@ -256,14 +316,14 @@ export default function App() {
     const next = [newGoal, ...goals];
     setGoals(next);
     StorageService.saveGoals(next);
-    showToast(`Meta "${newGoal.name}" creada`);
+    showToast(language === 'en' ? `Goal "${newGoal.name}" created` : `Meta "${newGoal.name}" creada`);
   };
 
   const handleDeleteGoal = (id: string) => {
     const next = goals.filter((g) => g.id !== id);
     setGoals(next);
     StorageService.saveGoals(next);
-    showToast('Meta eliminada');
+    showToast(language === 'en' ? 'Goal deleted' : 'Meta eliminada');
   };
 
   const handleContributeToGoal = (id: string, amount: number) => {
@@ -275,7 +335,7 @@ export default function App() {
     });
     setGoals(next);
     StorageService.saveGoals(next);
-    showToast(`Aporte de $${amount} registrado a la meta`);
+    showToast(language === 'en' ? `Contributed $${amount} to goal` : `Aporte de $${amount} registrado a la meta`);
   };
 
   // Record payment / partial payment
@@ -293,7 +353,7 @@ export default function App() {
       amount,
       date: todayStr,
       method,
-      notes: notes || 'Abono registrado',
+      notes: notes || (language === 'en' ? 'Payment logged' : 'Abono registrado'),
     };
 
     const newPaidTotal = expense.actualPaidAmount + amount;
@@ -310,8 +370,67 @@ export default function App() {
     handleUpdateFixedExpense(updatedExpense);
     showToast(
       isFullyPaid
-        ? `Factura "${expense.name}" liquidada por completo`
-        : `Abono de $${amount} registrado a "${expense.name}"`
+        ? (language === 'en' ? `Bill "${expense.name}" paid in full` : `Factura "${expense.name}" liquidada por completo`)
+        : (language === 'en' ? `Payment of $${amount} logged for "${expense.name}"` : `Abono de $${amount} registrado a "${expense.name}"`)
+    );
+  };
+
+  // Handler for Scanned Receipt from Photo
+  const handleConfirmScannedReceipt = (data: {
+    type: 'fixedExpense' | 'variable';
+    title: string;
+    amount: number;
+    date: string;
+    category: string;
+    responsibleMemberId: string;
+    paymentMethod: PaymentMethod;
+    isExtraordinary: boolean;
+    notes?: string;
+    receiptImageUrl?: string;
+  }) => {
+    const targetMonth = data.date.slice(0, 7) || currentMonthYear;
+
+    if (data.type === 'fixedExpense') {
+      const newFixed: FixedExpense = {
+        id: `fix-${Date.now()}`,
+        name: data.title,
+        category: data.category as any,
+        expectedAmount: data.amount,
+        actualPaidAmount: 0,
+        dueDate: data.date,
+        monthYear: targetMonth,
+        frequency: 'monthly',
+        paymentMethod: data.paymentMethod,
+        responsibleMemberId: data.responsibleMemberId,
+        status: 'pending',
+        notes: data.notes || 'Factura escaneada mediante foto',
+        payments: [],
+        receiptImageUrl: data.receiptImageUrl,
+      };
+      handleSaveFixedExpense(newFixed);
+      setActiveTab('fixedExpenses');
+    } else {
+      const newVar: VariableExpense = {
+        id: `var-${Date.now()}`,
+        description: data.title,
+        amount: data.amount,
+        category: (data.isExtraordinary ? 'Extraordinario' : data.category) as any,
+        date: data.date,
+        monthYear: targetMonth,
+        memberId: data.responsibleMemberId,
+        paymentMethod: data.paymentMethod,
+        isExtraordinary: data.isExtraordinary,
+        notes: data.notes || 'Ticket escaneado mediante foto',
+        receiptImageUrl: data.receiptImageUrl,
+      };
+      handleSaveVariableExpense(newVar);
+      setActiveTab('variableExpenses');
+    }
+
+    showToast(
+      language === 'en'
+        ? `Receipt "${data.title}" ($${data.amount}) successfully registered!`
+        : `¡Factura "${data.title}" ($${data.amount}) registrada con éxito!`
     );
   };
 
@@ -324,10 +443,16 @@ export default function App() {
 
     if (result.generatedFixedCount > 0 || result.generatedIncomeCount > 0) {
       showToast(
-        `Generados: ${result.generatedFixedCount} gastos fijos y ${result.generatedIncomeCount} ingresos para ${currentMonthYear}`
+        language === 'en'
+          ? `Generated: ${result.generatedFixedCount} fixed bills & ${result.generatedIncomeCount} incomes for ${currentMonthYear}`
+          : `Generados: ${result.generatedFixedCount} gastos fijos y ${result.generatedIncomeCount} ingresos para ${currentMonthYear}`
       );
     } else {
-      showToast('Todas las obligaciones recurrentes ya estaban sincronizadas para este mes.');
+      showToast(
+        language === 'en'
+          ? 'All recurring obligations already synced for this month.'
+          : 'Todas las obligaciones recurrentes ya estaban sincronizadas para este mes.'
+      );
     }
   };
 
@@ -343,7 +468,7 @@ export default function App() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Copia de seguridad descargada en JSON');
+    showToast(language === 'en' ? 'Database backup exported to JSON' : 'Copia de seguridad descargada en JSON');
   };
 
   const handleImportJSON = (jsonString: string) => {
@@ -356,9 +481,9 @@ export default function App() {
       setVariableExpenses(StorageService.getVariableExpenses());
       setBudgets(StorageService.getBudgets());
       setGoals(StorageService.getGoals());
-      showToast('Copia de seguridad restaurada correctamente');
+      showToast(language === 'en' ? 'Database restored successfully' : 'Copia de seguridad restaurada correctamente');
     } else {
-      showToast('Error al importar archivo JSON');
+      showToast(language === 'en' ? 'Error importing JSON backup' : 'Error al importar archivo JSON');
     }
   };
 
@@ -371,8 +496,27 @@ export default function App() {
     setVariableExpenses(StorageService.getVariableExpenses());
     setBudgets(StorageService.getBudgets());
     setGoals(StorageService.getGoals());
-    showToast('Demostración reiniciada con datos de la Familia Rivera');
+    showToast(language === 'en' ? 'Reset to Rivera Family demo data' : 'Demostración reiniciada con datos de la Familia Rivera');
   };
+
+  // If no user is logged in, show the minimalist Login Page
+  if (!currentUser) {
+    return (
+      <div className={isDarkMode ? 'dark' : ''}>
+        <LoginPage
+          language={language}
+          members={members}
+          onLoginSuccess={handleLoginSuccess}
+          onRegisterMember={handleRegisterNewMember}
+        />
+        {toastMessage && (
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 text-xs font-semibold rounded-2xl shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200">
+            {toastMessage}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
@@ -391,6 +535,8 @@ export default function App() {
         onMonthChange={setCurrentMonthYear}
         currencyCode={household.currency}
         householdName={household.name}
+        language={language}
+        onLanguageChange={handleLanguageChange}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         deviceMode={deviceMode}
@@ -400,6 +546,9 @@ export default function App() {
         onOpenSwiftDocs={() => setShowSwiftDocsModal(true)}
         onOpenSettings={() => setShowSettingsModal(true)}
         onGenerateRecurring={handleGenerateMonthlyRecurring}
+        onOpenScanReceipt={() => setShowReceiptScannerModal(true)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Toast Notification Banner */}
@@ -417,7 +566,7 @@ export default function App() {
             : 'max-w-7xl px-4 sm:px-6 py-6'
         }`}
       >
-        {/* Apple Dynamic Island (shown in both modes as interactive widget) */}
+        {/* Apple Dynamic Island */}
         <DynamicIsland
           availableBalance={currentSummary.availableBalance}
           overdueCount={overdueExpenses.length}
@@ -429,6 +578,7 @@ export default function App() {
         <div className="mt-4">
           {activeTab === 'dashboard' && (
             <DashboardModule
+              language={language}
               summary={currentSummary}
               currencyCode={household.currency}
               monthYear={currentMonthYear}
@@ -447,6 +597,7 @@ export default function App() {
                 setTransactionModalMode('payment');
                 setShowTransactionModal(true);
               }}
+              onOpenScanReceipt={() => setShowReceiptScannerModal(true)}
             />
           )}
 
@@ -544,11 +695,23 @@ export default function App() {
               onContributeToGoal={handleContributeToGoal}
             />
           )}
+
+          {activeTab === 'users' && (
+            <UsersAndVariablesModule
+              language={language}
+              household={household}
+              members={members}
+              currencyCode={household.currency}
+              onUpdateHousehold={handleUpdateHousehold}
+              onUpdateMembers={handleUpdateMembers}
+            />
+          )}
         </div>
       </main>
 
       {/* iOS Bottom Tab Bar */}
       <BottomTabBar
+        language={language}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         overdueFixedCount={overdueExpenses.length}
@@ -573,16 +736,30 @@ export default function App() {
         />
       )}
 
+      {showReceiptScannerModal && (
+        <ReceiptScannerModal
+          language={language}
+          members={members}
+          currencyCode={household.currency}
+          monthYear={currentMonthYear}
+          onClose={() => setShowReceiptScannerModal(false)}
+          onConfirmReceipt={handleConfirmScannedReceipt}
+        />
+      )}
+
       {showSettingsModal && (
         <SettingsAndFamilyModal
           household={household}
           members={members}
+          language={language}
+          onLanguageChange={handleLanguageChange}
           onClose={() => setShowSettingsModal(false)}
           onUpdateHousehold={handleUpdateHousehold}
           onUpdateMembers={handleUpdateMembers}
           onExportJSON={handleExportJSON}
           onImportJSON={handleImportJSON}
           onResetToDemo={handleResetToDemo}
+          onOpenUsersAndVariables={() => setActiveTab('users')}
         />
       )}
 

@@ -38,7 +38,17 @@ export class StorageService {
   static getHousehold(): Household {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.HOUSEHOLD);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed = JSON.parse(data);
+        return {
+          ...INITIAL_HOUSEHOLD,
+          ...parsed,
+          variables: {
+            ...INITIAL_HOUSEHOLD.variables,
+            ...(parsed.variables || {}),
+          },
+        };
+      }
     } catch (e) {
       console.error('Error reading household', e);
     }
@@ -53,7 +63,19 @@ export class StorageService {
   static getMembers(): FamilyMember[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.MEMBERS);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed: FamilyMember[] = JSON.parse(data);
+        // Ensure superadmin user is present and configured
+        const hasSuperAdmin = parsed.some(
+          (m) => m.phone === '1-272-892-1925' || m.systemRole === 'superadmin'
+        );
+        if (!hasSuperAdmin) {
+          const updated = [INITIAL_MEMBERS[0], ...parsed];
+          this.saveMembers(updated);
+          return updated;
+        }
+        return parsed;
+      }
     } catch (e) {
       console.error('Error reading members', e);
     }
@@ -63,6 +85,24 @@ export class StorageService {
 
   static saveMembers(members: FamilyMember[]) {
     localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
+  }
+
+  static getAuthSession(): { user: FamilyMember; method: string } | null {
+    try {
+      const data = localStorage.getItem('fbm_auth_session_v1');
+      if (data) return JSON.parse(data);
+    } catch (e) {
+      console.error('Error reading session', e);
+    }
+    return null;
+  }
+
+  static saveAuthSession(session: { user: FamilyMember; method: string } | null) {
+    if (session) {
+      localStorage.setItem('fbm_auth_session_v1', JSON.stringify(session));
+    } else {
+      localStorage.removeItem('fbm_auth_session_v1');
+    }
   }
 
   static getRecurringTemplates(): RecurringTemplate[] {

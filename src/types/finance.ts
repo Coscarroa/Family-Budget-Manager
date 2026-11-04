@@ -1,4 +1,5 @@
 export type CurrencyCode = 'USD' | 'EUR' | 'MXN' | 'COP' | 'ARS' | 'CLP' | 'PEN';
+export type AppLanguage = 'es' | 'en';
 
 export interface CurrencyConfig {
   code: CurrencyCode;
@@ -17,22 +18,47 @@ export const SUPPORTED_CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
   PEN: { code: 'PEN', symbol: 'S/', name: 'Sol peruano (PEN)', locale: 'es-PE' },
 };
 
+export type SystemRole = 'superadmin' | 'admin' | 'editor' | 'viewer';
+
 export interface FamilyMember {
   id: string;
   name: string;
   role: string; // e.g. "Padre", "Madre", "Hijo", etc.
+  systemRole?: SystemRole; // 'superadmin' | 'admin' | 'editor' | 'viewer'
   avatarColor: string;
   isMainEarner?: boolean;
+  email?: string;
+  phone?: string;
+  biometricEnabled?: boolean;
+  monthlyContribution?: number;
+  isActive?: boolean;
+  notes?: string;
+}
+
+export interface AuthSession {
+  user: FamilyMember;
+  loginTime: string;
+  method: 'otp' | 'biometric';
+}
+
+export interface HouseholdVariables {
+  emergencyFundMonths: number; // e.g. 6 months
+  targetSavingsRate: number; // e.g. 20%
+  alertThresholdPercent: number; // e.g. 80%
+  defaultPaymentMethod: PaymentMethod;
+  customCategories: string[];
 }
 
 export interface Household {
   id: string;
   name: string;
   currency: CurrencyCode;
+  language: AppLanguage;
   budgetCycleStartDay: number;
   pinProtected: boolean;
   pinCode?: string;
   members: FamilyMember[];
+  variables: HouseholdVariables;
 }
 
 export type IncomeCategory =
@@ -115,6 +141,7 @@ export interface FixedExpense {
   templateId?: string; // id of recurring rule
   notes?: string;
   payments: PaymentRecord[];
+  receiptImageUrl?: string;
 }
 
 export type VariableExpenseCategory =
@@ -144,6 +171,7 @@ export interface VariableExpense {
   paymentMethod: PaymentMethod;
   isExtraordinary: boolean;
   notes?: string;
+  receiptImageUrl?: string;
 }
 
 export interface BudgetLimit {
@@ -214,4 +242,17 @@ export type ActiveTab =
   | 'budget'
   | 'calendar'
   | 'reports'
-  | 'goals';
+  | 'goals'
+  | 'users';
+
+export interface ScannedReceiptData {
+  title: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  category: string;
+  suggestedType: 'fixedExpense' | 'variable';
+  isExtraordinary?: boolean;
+  paymentMethod?: PaymentMethod;
+  notes?: string;
+  confidenceScore?: number;
+}

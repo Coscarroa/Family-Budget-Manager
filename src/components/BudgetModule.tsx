@@ -82,7 +82,7 @@ export const BudgetModule: React.FC<BudgetModuleProps> = ({
   ];
 
   return (
-    <div className="space-y-6 pb-20 animate-in fade-in duration-300">
+    <div className="space-y-6 pb-32 sm:pb-24 animate-in fade-in duration-300">
       {/* Title & Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -264,11 +264,16 @@ export const BudgetModule: React.FC<BudgetModuleProps> = ({
 
       {/* Add / Edit Limit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
           <form
             onSubmit={handleSave}
-            className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4"
+            className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-t-[32px] sm:rounded-3xl p-6 shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 space-y-4 pb-safe animate-in fade-in zoom-in-95"
           >
+            {/* iOS grab handle */}
+            <div className="flex justify-center -mt-2 mb-1 sm:hidden">
+              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+            </div>
+
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Fijar Límite de Presupuesto
             </h3>
