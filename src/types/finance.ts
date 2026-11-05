@@ -243,7 +243,8 @@ export type ActiveTab =
   | 'calendar'
   | 'reports'
   | 'goals'
-  | 'users';
+  | 'users'
+  | 'training';
 
 export interface ScannedReceiptData {
   title: string;

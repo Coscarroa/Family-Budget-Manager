@@ -14,6 +14,7 @@ import {
   Languages,
   LogOut,
   User,
+  GraduationCap,
 } from 'lucide-react';
 import { CurrencyCode, AppLanguage, FamilyMember } from '../types/finance';
 import { getTranslation } from '../services/i18n';
@@ -33,6 +34,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenScanReceipt: () => void;
   onGenerateRecurring: () => void;
+  onOpenTraining?: () => void;
   currentUser?: FamilyMember | null;
   onLogout?: () => void;
 }
@@ -51,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onGenerateRecurring,
   onOpenScanReceipt,
+  onOpenTraining,
   currentUser,
   onLogout,
 }) => {
@@ -192,6 +195,18 @@ export const Header: React.FC<HeaderProps> = ({
               EN
             </button>
           </div>
+
+          {/* Training & Education Guide */}
+          {onOpenTraining && (
+            <button
+              onClick={onOpenTraining}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-colors border border-amber-200 dark:border-amber-800 cursor-pointer"
+              title="Instructivo & Consejos Financieros"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden lg:inline whitespace-nowrap">Capacitación</span>
+            </button>
+          )}
 
           {/* Swift & Xcode Docs Modal Trigger */}
           <button

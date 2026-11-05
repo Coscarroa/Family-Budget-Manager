@@ -39,6 +39,7 @@ import { SettingsAndFamilyModal } from './components/SettingsAndFamilyModal';
 import { SwiftArchitectureModal } from './components/SwiftArchitectureModal';
 import { ReceiptScannerModal } from './components/ReceiptScannerModal';
 import { LoginPage } from './components/LoginPage';
+import { TrainingModule } from './components/TrainingModule';
 
 export default function App() {
   // Theme state
@@ -547,6 +548,7 @@ export default function App() {
         onOpenSettings={() => setShowSettingsModal(true)}
         onGenerateRecurring={handleGenerateMonthlyRecurring}
         onOpenScanReceipt={() => setShowReceiptScannerModal(true)}
+        onOpenTraining={() => setActiveTab('training')}
         currentUser={currentUser}
         onLogout={handleLogout}
       />
@@ -704,6 +706,15 @@ export default function App() {
               currencyCode={household.currency}
               onUpdateHousehold={handleUpdateHousehold}
               onUpdateMembers={handleUpdateMembers}
+            />
+          )}
+
+          {activeTab === 'training' && (
+            <TrainingModule
+              language={language}
+              currencyCode={household.currency}
+              onNavigateTab={(tab) => setActiveTab(tab)}
+              onOpenScanReceipt={() => setShowReceiptScannerModal(true)}
             />
           )}
         </div>

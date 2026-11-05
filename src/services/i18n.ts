@@ -12,6 +12,7 @@ export const TRANSLATIONS = {
     tab_reports: 'Informes',
     tab_goals: 'Metas',
     tab_users: 'Usuarios y Vars',
+    tab_training: 'Capacitación y Guía',
 
     // Top Bar
     brand_title: 'Family Budget',
@@ -193,6 +194,7 @@ export const TRANSLATIONS = {
     tab_reports: 'Reports',
     tab_goals: 'Goals',
     tab_users: 'Users & Vars',
+    tab_training: 'Training & Guide',
 
     // Top Bar
     brand_title: 'Family Budget',

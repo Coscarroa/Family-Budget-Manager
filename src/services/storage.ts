@@ -343,4 +343,51 @@ export class StorageService {
       return false;
     }
   }
+
+  /**
+   * Solicita persistencia de almacenamiento permanente (Navigator Storage API).
+   * Evita que el navegador o iOS Safari limpie la base de datos local en condiciones de poco espacio.
+   */
+  static async requestPersistentStorage(): Promise<boolean> {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persist();
+        return isPersisted;
+      }
+    } catch (e) {
+      console.warn('Storage persistence request not supported or denied', e);
+    }
+    return false;
+  }
+
+  /**
+   * Comprueba si el almacenamiento local ya es permanente
+   */
+  static async isStoragePersistent(): Promise<boolean> {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persisted) {
+        return await navigator.storage.persisted();
+      }
+    } catch {
+      // Fallback
+    }
+    return false;
+  }
+
+  /**
+   * Obtiene métricas del almacenamiento local para visibilidad del usuario
+   */
+  static async getStorageEstimate(): Promise<{ usageMB: number; quotaMB: number } | null> {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate();
+        const usageMB = estimate.usage ? +(estimate.usage / (1024 * 1024)).toFixed(2) : 0;
+        const quotaMB = estimate.quota ? +(estimate.quota / (1024 * 1024)).toFixed(0) : 0;
+        return { usageMB, quotaMB };
+      }
+    } catch {
+      // Fallback
+    }
+    return null;
+  }
 }

@@ -13,6 +13,7 @@ import {
   X,
   ChevronRight,
   ShieldCheck,
+  GraduationCap,
 } from 'lucide-react';
 import { ActiveTab, AppLanguage } from '../types/finance';
 import { getTranslation } from '../services/i18n';
@@ -95,6 +96,12 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       label: t('tab_users'),
       icon: <Users className="w-5 h-5 text-blue-600" />,
       description: language === 'en' ? 'Member profiles & financial variables' : 'Integrantes, roles y variables del hogar',
+    },
+    {
+      id: 'training',
+      label: t('tab_training'),
+      icon: <GraduationCap className="w-5 h-5 text-amber-500" />,
+      description: language === 'en' ? 'Step-by-step guides & financial best practices' : 'Instructivo paso a paso y mejores prácticas familiares',
     },
   ];
 
