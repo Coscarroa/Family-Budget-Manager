@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Filter,
   Check,
+  FileText,
 } from 'lucide-react';
 import {
   CurrencyCode,
@@ -23,6 +24,7 @@ import {
   PaymentMethod,
 } from '../types/finance';
 import { FinancialCalculatorService } from '../services/financialCalculations';
+import { ReceiptViewerModal } from './ReceiptViewerModal';
 
 interface FixedExpensesModuleProps {
   fixedExpenses: FixedExpense[];
@@ -49,6 +51,7 @@ export const FixedExpensesModule: React.FC<FixedExpensesModuleProps> = ({
   const [selectedExpenseForHistory, setSelectedExpenseForHistory] = useState<FixedExpense | null>(null);
   const [editingExpenseAmountId, setEditingExpenseAmountId] = useState<string | null>(null);
   const [newAmountInput, setNewAmountInput] = useState<string>('');
+  const [viewingReceiptExpense, setViewingReceiptExpense] = useState<FixedExpense | null>(null);
 
   const format = (val: number) => FinancialCalculatorService.formatCurrency(val, currencyCode);
 
@@ -325,6 +328,21 @@ export const FixedExpensesModule: React.FC<FixedExpensesModuleProps> = ({
                           "{expense.notes}"
                         </p>
                       )}
+
+                      {(expense.receiptImageUrl || expense.invoiceNumber) && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setViewingReceiptExpense(expense)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 text-[11px] font-semibold hover:bg-blue-100 transition-colors cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>
+                              {expense.invoiceNumber ? `Factura ${expense.invoiceNumber}` : 'Ver comprobante original'}
+                            </span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -490,6 +508,23 @@ export const FixedExpensesModule: React.FC<FixedExpensesModuleProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Receipt Viewer Modal */}
+      {viewingReceiptExpense && (
+        <ReceiptViewerModal
+          title={viewingReceiptExpense.name}
+          receiptImageUrl={viewingReceiptExpense.receiptImageUrl}
+          invoiceNumber={viewingReceiptExpense.invoiceNumber}
+          taxId={viewingReceiptExpense.taxId}
+          amount={viewingReceiptExpense.expectedAmount}
+          date={viewingReceiptExpense.dueDate}
+          category={viewingReceiptExpense.category}
+          currencyCode={currencyCode}
+          notes={viewingReceiptExpense.notes}
+          language="es"
+          onClose={() => setViewingReceiptExpense(null)}
+        />
       )}
     </div>
   );

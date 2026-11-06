@@ -142,6 +142,11 @@ export interface FixedExpense {
   notes?: string;
   payments: PaymentRecord[];
   receiptImageUrl?: string;
+  taxId?: string;
+  invoiceNumber?: string;
+  subtotal?: number;
+  tax?: number;
+  currency?: string;
 }
 
 export type VariableExpenseCategory =
@@ -172,6 +177,11 @@ export interface VariableExpense {
   isExtraordinary: boolean;
   notes?: string;
   receiptImageUrl?: string;
+  taxId?: string;
+  invoiceNumber?: string;
+  subtotal?: number;
+  tax?: number;
+  currency?: string;
 }
 
 export interface BudgetLimit {
@@ -248,12 +258,19 @@ export type ActiveTab =
 
 export interface ScannedReceiptData {
   title: string;
-  amount: number;
-  date: string; // YYYY-MM-DD
+  taxId?: string; // Número fiscal / CIF / RFC / NIF
+  invoiceNumber?: string; // Número de factura / ticket
+  date: string; // Fecha de emisión YYYY-MM-DD
+  dueDate?: string; // Fecha de vencimiento YYYY-MM-DD
+  currency?: string; // USD, EUR, MXN, etc.
+  subtotal?: number;
+  tax?: number; // Impuestos (IVA, etc.)
+  amount: number; // Total de la factura
   category: string;
   suggestedType: 'fixedExpense' | 'variable';
   isExtraordinary?: boolean;
   paymentMethod?: PaymentMethod;
   notes?: string;
   confidenceScore?: number;
+  flaggedFields?: string[]; // Campos que requieren revisión por el usuario
 }

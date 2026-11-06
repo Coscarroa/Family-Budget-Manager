@@ -388,6 +388,12 @@ export default function App() {
     isExtraordinary: boolean;
     notes?: string;
     receiptImageUrl?: string;
+    taxId?: string;
+    invoiceNumber?: string;
+    dueDate?: string;
+    subtotal?: number;
+    tax?: number;
+    currency?: string;
   }) => {
     const targetMonth = data.date.slice(0, 7) || currentMonthYear;
 
@@ -398,18 +404,22 @@ export default function App() {
         category: data.category as any,
         expectedAmount: data.amount,
         actualPaidAmount: 0,
-        dueDate: data.date,
+        dueDate: data.dueDate || data.date,
         monthYear: targetMonth,
         frequency: 'monthly',
         paymentMethod: data.paymentMethod,
         responsibleMemberId: data.responsibleMemberId,
         status: 'pending',
-        notes: data.notes || 'Factura escaneada mediante foto',
+        notes: data.notes || (data.invoiceNumber ? `Factura Nº: ${data.invoiceNumber}` : 'Factura escaneada'),
         payments: [],
         receiptImageUrl: data.receiptImageUrl,
+        taxId: data.taxId,
+        invoiceNumber: data.invoiceNumber,
+        subtotal: data.subtotal,
+        tax: data.tax,
+        currency: data.currency,
       };
       handleSaveFixedExpense(newFixed);
-      setActiveTab('fixedExpenses');
     } else {
       const newVar: VariableExpense = {
         id: `var-${Date.now()}`,
@@ -421,16 +431,20 @@ export default function App() {
         memberId: data.responsibleMemberId,
         paymentMethod: data.paymentMethod,
         isExtraordinary: data.isExtraordinary,
-        notes: data.notes || 'Ticket escaneado mediante foto',
+        notes: data.notes || (data.invoiceNumber ? `Ticket/Factura Nº: ${data.invoiceNumber}` : 'Comprobante escaneado'),
         receiptImageUrl: data.receiptImageUrl,
+        taxId: data.taxId,
+        invoiceNumber: data.invoiceNumber,
+        subtotal: data.subtotal,
+        tax: data.tax,
+        currency: data.currency,
       };
       handleSaveVariableExpense(newVar);
-      setActiveTab('variableExpenses');
     }
 
     showToast(
       language === 'en'
-        ? `Receipt "${data.title}" ($${data.amount}) successfully registered!`
+        ? `Invoice "${data.title}" ($${data.amount}) successfully registered!`
         : `¡Factura "${data.title}" ($${data.amount}) registrada con éxito!`
     );
   };
@@ -753,8 +767,11 @@ export default function App() {
           members={members}
           currencyCode={household.currency}
           monthYear={currentMonthYear}
+          fixedExpenses={fixedExpenses}
+          variableExpenses={variableExpenses}
           onClose={() => setShowReceiptScannerModal(false)}
           onConfirmReceipt={handleConfirmScannedReceipt}
+          onViewExpense={(expenseType) => setActiveTab(expenseType === 'fixedExpense' ? 'fixedExpenses' : 'variableExpenses')}
         />
       )}
 

@@ -219,9 +219,9 @@ export const TrainingModule: React.FC<TrainingModuleProps> = ({
           title: language === 'en' ? '1. Fast Receipt Scanning via Photo' : '1. Escanear recibos mediante fotografía',
           description:
             language === 'en'
-              ? 'Click "Escanear Factura" in the top bar or use the scanner button to upload a receipt photo. Gemini extracts vendor, amount, date, and category automatically.'
-              : 'Toca "Escanear Factura" en la barra superior. Sube o toma una foto del ticket y la IA extraerá comercio, monto y categoría al instante.',
-          actionLabel: language === 'en' ? 'Open Receipt Scanner' : 'Abrir Escáner de Factura',
+              ? 'Click "Scan invoice" in the top bar. Choose "Take photo" or "Upload file". Gemini will automatically extract fiscal ID, invoice number, dates, taxes, and total.'
+              : 'Toca "Escanear factura" en la barra superior. Selecciona "Tomar foto" o "Subir archivo". La IA extraerá emisor, NIF/RFC, número de factura, importes e impuestos.',
+          actionLabel: language === 'en' ? 'Open Invoice Scanner' : 'Escanear factura',
           onAction: onOpenScanReceipt,
         },
         {

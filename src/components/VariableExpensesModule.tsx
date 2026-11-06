@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Sparkles,
   ShoppingBag,
+  FileText,
 } from 'lucide-react';
 import {
   CurrencyCode,
@@ -17,6 +18,7 @@ import {
   VariableExpenseCategory,
 } from '../types/finance';
 import { FinancialCalculatorService } from '../services/financialCalculations';
+import { ReceiptViewerModal } from './ReceiptViewerModal';
 
 interface VariableExpensesModuleProps {
   variableExpenses: VariableExpense[];
@@ -41,6 +43,7 @@ export const VariableExpensesModule: React.FC<VariableExpensesModuleProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedMember, setSelectedMember] = useState<string>('all');
   const [onlyExtraordinary, setOnlyExtraordinary] = useState(false);
+  const [viewingReceiptExpense, setViewingReceiptExpense] = useState<VariableExpense | null>(null);
 
   const format = (val: number) => FinancialCalculatorService.formatCurrency(val, currencyCode);
 
@@ -250,6 +253,21 @@ export const VariableExpensesModule: React.FC<VariableExpensesModuleProps> = ({
                       "{expense.notes}"
                     </p>
                   )}
+
+                  {(expense.receiptImageUrl || expense.invoiceNumber) && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setViewingReceiptExpense(expense)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900 text-[11px] font-semibold hover:bg-indigo-100 transition-colors cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>
+                          {expense.invoiceNumber ? `Ticket/Factura ${expense.invoiceNumber}` : 'Ver comprobante original'}
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -269,6 +287,23 @@ export const VariableExpensesModule: React.FC<VariableExpensesModuleProps> = ({
           })
         )}
       </div>
+
+      {/* Receipt Viewer Modal */}
+      {viewingReceiptExpense && (
+        <ReceiptViewerModal
+          title={viewingReceiptExpense.description}
+          receiptImageUrl={viewingReceiptExpense.receiptImageUrl}
+          invoiceNumber={viewingReceiptExpense.invoiceNumber}
+          taxId={viewingReceiptExpense.taxId}
+          amount={viewingReceiptExpense.amount}
+          date={viewingReceiptExpense.date}
+          category={viewingReceiptExpense.category}
+          currencyCode={currencyCode}
+          notes={viewingReceiptExpense.notes}
+          language="es"
+          onClose={() => setViewingReceiptExpense(null)}
+        />
+      )}
     </div>
   );
 };
